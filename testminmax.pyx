@@ -51,12 +51,13 @@ def benchmark(n):
 	from random import randint
 	from time import perf_counter
 	cdef:
-		MinMaxHeap[int] heap
 		vector[int] l = [randint(0, 5 * n) for _ in range(n)]
 		vector[int] actions = [randint(0, 1) for _ in range(n)]
 		int x, a, e
 
 	start = perf_counter()
+	cdef MinMaxHeap[int] heap
+	heap.reserve(n)
 	for x in l:
 		heap.insert(x)
 	for a in actions:
@@ -66,9 +67,8 @@ def benchmark(n):
 			e = heap.popmax()
 	print("Time C++ heap: %f" % (perf_counter() - start))
 
-	pyheap = PyMinMaxHeap(n)
-
 	start = perf_counter()
+	pyheap = PyMinMaxHeap(n)
 	for x in l:
 		pyheap.insert(x)
 	for a in actions:
