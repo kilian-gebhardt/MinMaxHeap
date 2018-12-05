@@ -9,6 +9,7 @@ cdef extern from "_minmaxheap.h" namespace "minmaxheap":
 		# short level(size_t n)
 		size_t size()
 		void insert(T key)
+		void clear()
 		T peekmin()
 		T peekmax()
 		T popmin()

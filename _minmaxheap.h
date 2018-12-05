@@ -34,6 +34,7 @@ namespace minmaxheap {
 			MinMaxHeap(size_t reserve=0);
 			void reserve(size_t n);
 			inline size_t size() const;
+			inline void clear();
 			void insert(T key);
 			T peekmin() const;
 			T peekmax() const;
@@ -57,6 +58,11 @@ namespace minmaxheap {
 	template<typename T>
 	inline size_t MinMaxHeap<T>::size() const {
 		return heap.size();
+	}
+
+	template<typename T>
+	inline void MinMaxHeap<T>::clear() {
+		heap.clear();
 	}
 
 	template<typename T>
