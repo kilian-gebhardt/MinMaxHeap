@@ -5,7 +5,7 @@ For testing compile and run the Cython code with
 
 ```
 cythonize -i testminmax.pyx
-./run.sh
+./run.py
 ```
 
 which should output something like:
