@@ -50,96 +50,52 @@ def level(i):
 	return (i+1).bit_length() - 1
 
 
-def trickledown(array, i, size):
+def comparer(i):
 	if level(i) % 2 == 0:  # min level
-		trickledownmin(array, i, size)
+		return lambda x, y: x < y
 	else:
-		trickledownmax(array, i, size)
+		return lambda x, y: x > y
 
 
-def trickledownmin(array, i, size):
+def trickledown(array, i, size):
+	cmp = comparer(i)
+
 	while size > i * 2 + 1:  # i has children
 		m = i * 2 + 1
-		if m + 1 < size and array[m+1] < array[m]:
+		if m + 1 < size and cmp(array[m+1], array[m]):
 			m += 1
 		child = True
 		for j in range(i*4+3, min(i*4+7, size)):
-			if array[j] < array[m]:
+			if cmp(array[j], array[m]):
 				m = j
 				child = False
 
-		if child:
-			if array[m] < array[i]:
-				array[i], array[m] = array[m], array[i]
-			break
-		else:
-			if array[m] < array[i]:
-				array[m], array[i] = array[i], array[m]
-				if array[m] > array[(m-1) // 2]:
-					array[m], array[(m-1)//2] = array[(m-1)//2], array[m]
-				# trickledownmin(array, m, size)
-				i = m
-			else:
-				break
-
-
-def trickledownmax(array, i, size):
-	while size > i * 2 + 1:  # i has children
-		m = i * 2 + 1
-		if i * 2 + 2 < size and array[i*2+2] > array[m]:
-			m = i*2+2
-		child = True
-		for j in range(i*4+3, min(i*4+7, size)):
-			if array[j] > array[m]:
-				m = j
-				child = False
+		if cmp(array[m], array[i]):
+			array[i], array[m] = array[m], array[i]
 
 		if child:
-			if array[m] > array[i]:
-				array[i], array[m] = array[m], array[i]
 			break
-		else:
-			if array[m] > array[i]:
-				array[m], array[i] = array[i], array[m]
-				if array[m] < array[(m-1) // 2]:
-					array[m], array[(m-1)//2] = array[(m-1)//2], array[m]
-				# trickledownmax(array, m, size)
-				i = m
-			else:
-				break
+
+		if cmp(array[(m-1) // 2], array[m]):
+			array[m], array[(m-1)//2] = array[(m-1)//2], array[m]
+		i = m
 
 
 def bubbleup(array, i):
-	if level(i) % 2 == 0:  # min level
-		if i > 0 and array[i] > array[(i-1) // 2]:
-			array[i], array[(i-1) // 2] = array[(i-1)//2], array[i]
-			bubbleupmax(array, (i-1)//2)
-		else:
-			bubbleupmin(array, i)
-	else:  # max level
-		if i > 0 and array[i] < array[(i-1) // 2]:
-			array[i], array[(i-1) // 2] = array[(i-1) // 2], array[i]
-			bubbleupmin(array, (i-1)//2)
-		else:
-			bubbleupmax(array, i)
+	cmp = comparer(i)
+	if i > 0:
+		m = (i - 1) // 2
+		if cmp(array[m], array[i]):
+			array[i], array[m] = array[m], array[i]
+			i = m
+			cmp = comparer(i)
 
-
-def bubbleupmin(array, i):
 	while i > 2:
-		if array[i] < array[(i-3) // 4]:
-			array[i], array[(i-3) // 4] = array[(i-3) // 4], array[i]
-			i = (i-3) // 4
-		else:
-			return
-
-
-def bubbleupmax(array, i):
-	while i > 2:
-		if array[i] > array[(i-3) // 4]:
-			array[i], array[(i-3) // 4] = array[(i-3) // 4], array[i]
-			i = (i-3) // 4
-		else:
-			return
+		m = (i - 3) // 4
+		if cmp(array[m], array[i]):
+			break
+		array[i], array[m] = array[m], array[i]
+		i = m
 
 
 def peekmin(array, size):
@@ -188,28 +144,14 @@ def insert(array, k, size):
 
 def minmaxheapproperty(array, size):
 	for i, k in enumerate(array[:size]):
-		if level(i) % 2 == 0:  # min level
-			# check children to be larger
-			for j in range(2 * i + 1, min(2 * i + 3, size)):
-				if array[j] < k:
-					print(array, j, i, array[j], array[i], level(i))
-					return False
-			# check grand children to be larger
-			for j in range(4 * i + 3, min(4 * i + 7, size)):
-				if array[j] < k:
-					print(array, j, i, array[j], array[i], level(i))
-					return False
-		else:
-			# check children to be smaller
-			for j in range(2 * i + 1, min(2 * i + 3, size)):
-				if array[j] > k:
-					print(array, j, i, array[j], array[i], level(i))
-					return False
-			# check grand children to be smaller
-			for j in range(4 * i + 3, min(4 * i + 7, size)):
-				if array[j] > k:
-					print(array, j, i, array[j], array[i], level(i))
-					return False
+		# check children and grandchildren to be larger (min level) or smaller (max level)
+		cmp = comparer(i)
+		children = range(2 * i + 1, min(2 * i + 3, size))
+		grandchildren = range(4 * i + 3, min(4 * i + 7, size))
+		for j in [*children, *grandchildren]:
+			if cmp(array[j], k):
+				print(array, j, i, array[j], array[i], level(i))
+				return False
 
 	return True
 
